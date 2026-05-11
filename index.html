@@ -162,13 +162,11 @@
 
     .card-footer { padding: 14px 20px; background: var(--gray-light); border-top: 1px solid var(--gray-mid); display: flex; flex-direction: column; gap: 8px; }
     
-    .btn-plan, .btn-ws, .btn-roi {
+    .btn-ws, .btn-roi {
       font-family: var(--font); font-size: 13px; font-weight: 600; text-decoration: none;
       border-radius: 4px; padding: 9px 14px; display: flex; align-items: center;
       justify-content: center; gap: 7px; cursor: pointer; width: 100%; transition: all var(--transition);
     }
-    .btn-plan { color: var(--black); background: var(--white); border: 2px solid var(--black); }
-    .btn-plan:hover { background: var(--black); color: var(--white); }
     
     .btn-ws { color: var(--white); background: #25D366; border: 2px solid #25D366; }
     .btn-ws:hover { background: #1ebe5d; border-color: #1ebe5d; }
@@ -236,8 +234,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <header>
   <a class="logo" href="#">
-    <!-- Reemplaza el src con tu logo o la cadena en base64 -->
-    <img src="tu-logo.png" alt="Comunidad Tesista de Latinoamérica" style="height:52px;width:auto;display:block;" />
+    <!-- AQUÍ REEMPLAZA EL SRC CON TU IMAGEN EN BASE 64 O LA RUTA A TU LOGO -->
+    <img src="logo.png" alt="Comunidad Tesista de Latinoamérica" style="height:52px;width:auto;display:block;" />
   </a>
 
   <button class="hamburger" id="hamburger" aria-label="Menú">
@@ -304,7 +302,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- ── FOOTER ── -->
 <footer>
-  © 2025 <strong>Comunidad Tesista de Latinoamérica</strong> — Conectando talento con oportunidades globales.
+  © 2026 <strong>Comunidad Tesista de Latinoamérica</strong> — Conectando talento con oportunidades globales.
 </footer>
 
 <!-- ── MODAL CALCULADORA ROI ── -->
@@ -334,26 +332,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- ── SCRIPTS ── -->
 <script>
-  /* ─── DATOS (DE GOOGLE SHEETS O TEMPORALES) ─── */
-  // Si tienes el CSV público, pega la URL aquí:
-  const SHEET_URL = ''; 
+  /* ─── DATOS (CONECTADOS A GOOGLE SHEETS) ─── */
+  // Pega aquí el enlace CSV público de tu Google Sheet
+  const SHEET_URL = 'PEGA_AQUI_TU_ENLACE_CSV_DE_GOOGLE_SHEETS'; 
   
-  // Datos temporales (fallback)
-  let posgrados = [
-    { id: 'NEG-001', nombre: 'MBA Ejecutivo',          pais: 'España',    matricula: 15000, costoVida: 1200, imagen: null, emoji: '🏛️', urlPlan: '#' },
-    { id: 'TEC-002', nombre: 'Maestría en IA',         pais: 'Colombia',  matricula: 8000,  costoVida: 700,  imagen: null, emoji: '🤖', urlPlan: '#' },
-    { id: 'TEC-003', nombre: 'Especialista en Data',   pais: 'Argentina', matricula: 5000,  costoVida: 600,  imagen: null, emoji: '📊', urlPlan: '#' },
-    { id: 'DER-004', nombre: 'Doctorado en Derecho',   pais: 'España',    matricula: 12000, costoVida: 1100, imagen: null, emoji: '⚖️', urlPlan: '#' },
-    { id: 'TEC-005', nombre: 'Maestría en Diseño UX',  pais: 'Colombia',  matricula: 6500,  costoVida: 750,  imagen: null, emoji: '🎨', urlPlan: '#' },
-    { id: 'NEG-006', nombre: 'MBA Internacional',      pais: 'Argentina', matricula: 9500,  costoVida: 650,  imagen: null, emoji: '🌎', urlPlan: '#' },
-    { id: 'HUM-007', nombre: 'Programa Humanidades',   pais: 'Colombia',  matricula: 4500,  costoVida: 680,  imagen: null, emoji: '📚', urlPlan: '#' },
-    { id: 'ING-008', nombre: 'Maestría Tecnología',    pais: 'Argentina', matricula: 7000,  costoVida: 620,  imagen: null, emoji: '💻', urlPlan: '#' },
-    { id: 'NEG-009', nombre: 'Especialización Gestión',pais: 'España',    matricula: 11000, costoVida: 1050, imagen: null, emoji: '📈', urlPlan: '#' },
-    { id: 'SAL-010', nombre: 'Maestría en Salud',      pais: 'Colombia',  matricula: 7500,  costoVida: 720,  imagen: null, emoji: '🏥', urlPlan: '#' },
-  ];
+  let posgrados = [];
 
   /* ─── UTILIDADES ─── */
   function badgeClass(pais) {
+    if (!pais) return 'badge-default';
     const p = pais.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const map = { 'colombia': 'badge-colombia', 'espana': 'badge-españa', 'argentina': 'badge-argentina', 'mexico': 'badge-mexico', 'usa': 'badge-usa' };
     return map[p] || 'badge-default';
@@ -363,46 +350,48 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
   }
 
-  // Quita tildes para búsqueda exacta
   function normalizeText(text) {
+    if (!text) return '';
     return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
-  /* ─── RENDER CARDS ─── */
+  /* ─── RENDER CARDS (Adaptado a tus columnas) ─── */
   function renderCard(p, idx) {
     const bc = badgeClass(p.pais);
-    const imgSection = p.imagen
-      ? `<img class="card-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy" />`
-      : `<div class="card-img-placeholder">${p.emoji || '🎓'}</div>`;
+    const icono = '🎓'; 
 
     return `
       <article class="card" style="animation-delay:${0.05 + idx * 0.07}s">
-        ${imgSection}
+        <div class="card-img-placeholder">${icono}</div>
         <div class="card-body">
           <div class="card-top">
             <h2 class="card-title">${p.nombre}</h2>
             <span class="badge-pais ${bc}">${p.pais}</span>
           </div>
           <div class="card-divider"></div>
+          
           <div class="card-prices">
             <div class="price-block">
-              <div class="price-label">Matrícula</div>
-              <div class="price-value">${fmt(p.matricula)}<small>/año</small></div>
+              <div class="price-label">Inversión</div>
+              <div class="price-value">${fmt(p.matricula)}<small> USD</small></div>
             </div>
             <div class="price-block price-secondary">
-              <div class="price-label">Costo de vida</div>
-              <div class="price-value">${fmt(p.costoVida)}<small>/mes</small></div>
+              <div class="price-label">Duración / Modalidad</div>
+              <div class="price-value" style="font-size: 14px; font-weight: 600; color: var(--black);">
+                ${p.duracion} Meses <br><small style="color: var(--gray-text);">${p.modalidad}</small>
+              </div>
             </div>
           </div>
+          
         </div>
         <div class="card-footer">
-          <a href="${p.urlPlan || '#'}" class="btn-plan" data-programa-id="${p.id}" data-programa-nombre="${p.nombre}" data-programa-pais="${p.pais}" data-accion="ver_plan">
-            📄 Ver Plan de Estudios
-          </a>
+          <!-- Botón WhatsApp -->
           <button class="btn-ws" data-programa-id="${p.id}" data-programa-nombre="${p.nombre}" data-programa-pais="${p.pais}" data-accion="contacto_whatsapp">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.306A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
-            Contactar por WhatsApp
+            Contactar Asesor
           </button>
+          
+          <!-- Botón Calculadora ROI -->
           <button class="btn-roi" data-programa-id="${p.id}" data-accion="abrir_roi">
             📊 Calcular ROI del Programa
           </button>
@@ -458,7 +447,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function sendToDataLayer(eventName, payload) {
     window.dataLayer = window.dataLayer || [];
     
-    // 1. Reset Formal (Clearing): Limpiamos todas las custom keys que maneja nuestra app
+    // 1. Reset Formal (Clearing variables para evitar contaminación)
     window.dataLayer.push({
       programa_id: undefined,
       programa_nombre: undefined,
@@ -476,7 +465,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       ...payload
     });
 
-    // 3. Auditoría en Consola
+    // 3. Auditoría en Consola (Fácil debugueo)
     console.log(`[Auditoría GTM] Evento: ${eventName} | Payload:`, payload);
   }
 
@@ -491,14 +480,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       window.open(`https://wa.me/?text=${text}`, '_blank');
     }
 
-    // 2. Clic Plan Estudios
-    const btnPlan = e.target.closest('.btn-plan');
-    if (btnPlan) {
-      const data = btnPlan.dataset;
-      sendToDataLayer('click_ver_plan', { programa_id: data.programaId, programa_nombre: data.programaNombre, programa_pais: data.programaPais, accion: data.accion });
-    }
-
-    // 3. Abrir Modal ROI
+    // 2. Abrir Modal ROI
     const btnRoi = e.target.closest('.btn-roi');
     if (btnRoi) {
       e.preventDefault();
@@ -534,6 +516,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const programa = posgrados.find(p => p.id === programaId);
     if (!programa) return;
 
+    // Calculamos según el prefijo del ID (ej: de "SAL-001" extrae "SAL")
     const prefijoArea = programaId.split('-')[0];
     const multiplicador = multiplicadoresArea[prefijoArea] || 0.20; 
     
@@ -560,37 +543,65 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
   });
 
-  /* ─── INIT GOOGLE SHEETS ─── */
+  /* ─── INIT GOOGLE SHEETS Y MAPEO ─── */
   async function initApp() {
-    if(!SHEET_URL) { renderGrid(posgrados); return; } // Si no hay url usa los temporales
+    if(!SHEET_URL) { 
+      document.getElementById('cardsGrid').innerHTML = '<div class="empty-state"><h3>Falta el link de Google Sheets</h3><p>Edita el archivo index.html y pega tu link en la constante SHEET_URL.</p></div>';
+      return; 
+    }
+    
+    // EL TRADUCTOR (A la izquierda tus columnas exactas de Looker, a la derecha el JS)
+    const mapeoColumnas = {
+      'ID_Programa': 'id',
+      'Programa': 'nombre',
+      'Area': 'area',
+      'Pais': 'pais',
+      'Precio_USD': 'matricula',
+      'Duracion_Meses': 'duracion',
+      'Modalidad': 'modalidad',
+      'Beca_Disponible': 'beca',
+      'Demanda_Simulada': 'demanda'
+    };
+
     try {
       const response = await fetch(SHEET_URL);
       const csvData = await response.text();
       const lines = csvData.split('\n');
-      const headers = lines[0].split(',').map(h => h.trim());
-      posgrados = [];
+      
+      const headers = lines[0].split(',').map(h => h.trim().replace('\r', ''));
       
       for(let i = 1; i < lines.length; i++) {
-        if(!lines[i]) continue;
+        if(!lines[i] || lines[i].trim() === '') continue; 
+        
         const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
         const obj = {};
-        headers.forEach((header, j) => { obj[header] = currentline[j] ? currentline[j].replace(/"/g, '').trim() : ''; });
-        obj.matricula = Number(obj.matricula);
-        obj.costoVida = Number(obj.costoVida);
+        
+        headers.forEach((header, j) => { 
+          let valor = currentline[j] ? currentline[j].replace(/"/g, '').replace('\r', '').trim() : ''; 
+          let claveInterna = mapeoColumnas[header] || header;
+          obj[claveInterna] = valor;
+        });
+        
+        // Formateo de números vital para la calculadora
+        obj.matricula = Number(obj.matricula) || 0;
+        
         posgrados.push(obj);
       }
+      
       renderGrid(posgrados);
+      
     } catch (e) {
-      console.error('Error:', e);
-      renderGrid(posgrados); // Fallback a los datos locales si falla
+      console.error('Error de red o de parseo:', e);
+      document.getElementById('cardsGrid').innerHTML = '<div class="empty-state"><h3>Error al conectar con la base de datos.</h3></div>';
     }
   }
 
-  // Hamburger menu
+  // Hamburger menu (Mobile)
   document.getElementById('hamburger').addEventListener('click', function () {
     document.getElementById('nav').classList.toggle('open');
   });
 
+  // Ejecutamos la carga inicial
   initApp();
 </script>
 </body>
