@@ -139,7 +139,8 @@
     .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-hover); border-color: var(--yellow); }
     @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
-    .card-img-placeholder { width: 100%; height: 140px; display: flex; align-items: center; justify-content: center; font-size: 40px; background: linear-gradient(135deg, #1a1a1a 0%, #333 100%); }
+    .card-img { width: 100%; height: 180px; object-fit: cover; display: block; background: var(--gray-mid); border-bottom: 1px solid var(--gray-mid); }
+    .card-img-placeholder { width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; font-size: 40px; background: linear-gradient(135deg, #1a1a1a 0%, #333 100%); }
     .card-body { padding: 20px 20px 16px; flex-grow: 1; }
     .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
     .card-title { font-size: 18px; font-weight: 600; color: var(--black); line-height: 1.3; letter-spacing: -0.3px; }
@@ -234,8 +235,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <header>
   <a class="logo" href="#">
-    <!-- AQUÍ REEMPLAZA EL SRC CON TU IMAGEN EN BASE 64 O LA RUTA A TU LOGO -->
-    <img src="logo.png" alt="Comunidad Tesista de Latinoamérica" style="height:52px;width:auto;display:block;" />
+    <!-- AQUÍ ESTÁ EL LOGO CON LA RUTA AL REPOSITORIO -->
+    <img src="logo.jpg" alt="Comunidad Tesista de Latinoamérica" style="height:52px;width:auto;display:block;" />
   </a>
 
   <button class="hamburger" id="hamburger" aria-label="Menú">
@@ -273,7 +274,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="stats-bar">
   <div class="stat"><span class="stat-dot"></span> 120+ Programas</div>
   <div class="stat"><span class="stat-dot"></span> 30+ Países</div>
-  <div class="stat"><span class="stat-dot"></span> Datos actualizados 2025</div>
+  <div class="stat"><span class="stat-dot"></span> Datos actualizados 2026</div>
 </div>
 
 <!-- ── MAIN ── -->
@@ -334,7 +335,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script>
   /* ─── DATOS (CONECTADOS A GOOGLE SHEETS) ─── */
   // Pega aquí el enlace CSV público de tu Google Sheet
-  const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmgfHu0dWc6MuCTI0JmcV3769ePKOZR5Aq3eSrMBXFMIvyYuX9DWY22bShlW7TK6daZVyuiHvew3Gh/pub?gid=0&single=true&output=csv'; 
+  const SHEET_URL = 'PEGA_AQUI_TU_ENLACE_CSV_DE_GOOGLE_SHEETS'; 
   
   let posgrados = [];
 
@@ -355,14 +356,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
-  /* ─── RENDER CARDS (Adaptado a tus columnas) ─── */
+  /* ─── RENDER CARDS ─── */
   function renderCard(p, idx) {
     const bc = badgeClass(p.pais);
-    const icono = '🎓'; 
+    
+    // Si hay imagen en el Sheet la renderiza, si no, usa el icono
+    const imgSection = p.imagen 
+      ? `<img class="card-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy" />` 
+      : `<div class="card-img-placeholder">🎓</div>`;
 
     return `
       <article class="card" style="animation-delay:${0.05 + idx * 0.07}s">
-        <div class="card-img-placeholder">${icono}</div>
+        ${imgSection}
         <div class="card-body">
           <div class="card-top">
             <h2 class="card-title">${p.nombre}</h2>
@@ -442,35 +447,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   });
 
   /* ─── EVENTOS GLOBALES (DATALAYER + GTM) ─── */
-  
-  // Función blindada con Reset y Auditoría
   function sendToDataLayer(eventName, payload) {
     window.dataLayer = window.dataLayer || [];
     
-    // 1. Reset Formal (Clearing variables para evitar contaminación)
     window.dataLayer.push({
-      programa_id: undefined,
-      programa_nombre: undefined,
-      programa_pais: undefined,
-      accion: undefined,
-      area_programa: undefined,
-      salario_actual_usd: undefined,
-      salario_post_usd: undefined,
-      roi_meses: undefined
+      programa_id: undefined, programa_nombre: undefined, programa_pais: undefined,
+      accion: undefined, area_programa: undefined, salario_actual_usd: undefined,
+      salario_post_usd: undefined, roi_meses: undefined
     });
 
-    // 2. Envío del nuevo evento
-    window.dataLayer.push({
-      'event': eventName,
-      ...payload
-    });
-
-    // 3. Auditoría en Consola (Fácil debugueo)
+    window.dataLayer.push({ 'event': eventName, ...payload });
     console.log(`[Auditoría GTM] Evento: ${eventName} | Payload:`, payload);
   }
 
   document.getElementById('cardsGrid').addEventListener('click', function(e) {
-    // 1. Clic WhatsApp
     const btnWs = e.target.closest('.btn-ws');
     if (btnWs) {
       e.preventDefault();
@@ -480,7 +470,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       window.open(`https://wa.me/?text=${text}`, '_blank');
     }
 
-    // 2. Abrir Modal ROI
     const btnRoi = e.target.closest('.btn-roi');
     if (btnRoi) {
       e.preventDefault();
@@ -516,7 +505,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const programa = posgrados.find(p => p.id === programaId);
     if (!programa) return;
 
-    // Calculamos según el prefijo del ID (ej: de "SAL-001" extrae "SAL")
     const prefijoArea = programaId.split('-')[0];
     const multiplicador = multiplicadoresArea[prefijoArea] || 0.20; 
     
@@ -532,7 +520,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <strong>${Math.ceil(mesesRecuperacion)} meses</strong>.
     `;
 
-    // Enviar Evento ROI a GTM
     sendToDataLayer('generate_lead_roi', {
       programa_id: programaId,
       programa_nombre: programa.nombre,
@@ -545,12 +532,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   /* ─── INIT GOOGLE SHEETS Y MAPEO ─── */
   async function initApp() {
-    if(!SHEET_URL) { 
-      document.getElementById('cardsGrid').innerHTML = '<div class="empty-state"><h3>Falta el link de Google Sheets</h3><p>Edita el archivo index.html y pega tu link en la constante SHEET_URL.</p></div>';
+    if(!SHEET_URL || SHEET_URL === 'PEGA_AQUI_TU_ENLACE_CSV_DE_GOOGLE_SHEETS') { 
+      document.getElementById('cardsGrid').innerHTML = '<div class="empty-state"><h3>Falta el link de Google Sheets</h3><p>Edita el archivo index.html y pega tu link en la constante SHEET_URL (Línea 275).</p></div>';
       return; 
     }
     
-    // EL TRADUCTOR (A la izquierda tus columnas exactas de Looker, a la derecha el JS)
+    // EL TRADUCTOR (A la izquierda tus columnas de Looker + Foto_Campus, a la derecha el JS)
     const mapeoColumnas = {
       'ID_Programa': 'id',
       'Programa': 'nombre',
@@ -560,7 +547,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       'Duracion_Meses': 'duracion',
       'Modalidad': 'modalidad',
       'Beca_Disponible': 'beca',
-      'Demanda_Simulada': 'demanda'
+      'Demanda_Simulada': 'demanda',
+      'Foto_Campus': 'imagen' 
     };
 
     try {
@@ -582,9 +570,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           obj[claveInterna] = valor;
         });
         
-        // Formateo de números vital para la calculadora
         obj.matricula = Number(obj.matricula) || 0;
-        
         posgrados.push(obj);
       }
       
@@ -601,7 +587,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     document.getElementById('nav').classList.toggle('open');
   });
 
-  // Ejecutamos la carga inicial
   initApp();
 </script>
 </body>
